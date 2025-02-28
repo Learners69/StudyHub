@@ -4,6 +4,7 @@ function initializeNavigation() {
     const searchBox = document.querySelector('.search-box');
     const searchInput = searchBox.querySelector('input');
     const searchIcon = document.querySelector('.search-icon');
+    const searchClear = document.querySelector('.search-clear');
     let searchVisible = false;
 
     // Function to perform search
@@ -15,11 +16,21 @@ function initializeNavigation() {
         }
     };
 
-    // Toggle search box only on desktop
+    // Function to clear search
+    const clearSearch = () => {
+        searchInput.value = '';
+        searchInput.focus();
+    };
+
+    // Handle clear button click
+    searchClear.addEventListener('click', clearSearch);
+
+    // Desktop-only search box toggle
     if (window.innerWidth > 768) {
-        searchBtn.addEventListener('click', () => {
+        searchBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             searchVisible = !searchVisible;
-            searchBox.style.display = searchVisible ? 'block' : 'none';
+            searchBox.classList.toggle('active', searchVisible);
             searchBtn.classList.toggle('hidden', searchVisible);
             if (searchVisible) {
                 searchInput.focus();
@@ -30,19 +41,35 @@ function initializeNavigation() {
         document.addEventListener('click', (e) => {
             if (!searchBtn.contains(e.target) && !searchBox.contains(e.target)) {
                 searchVisible = false;
-                searchBox.style.display = 'none';
+                searchBox.classList.remove('active');
                 searchBtn.classList.remove('hidden');
             }
         });
+
+        // Prevent search box from closing when clicking inside it
+        searchBox.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
     }
 
-    // Handle search icon click
+    // Handle search icon click for both mobile and desktop
     searchIcon.addEventListener('click', performSearch);
 
-    // Handle search input enter key
+    // Handle search input enter key and escape key
     searchInput.addEventListener('keyup', (e) => {
         if (e.key === 'Enter') {
             performSearch();
+        }
+        // Handle Escape key
+        if (e.key === 'Escape') {
+            if (searchInput.value) {
+                clearSearch();
+            } else if (window.innerWidth > 768) {
+                // Only close the search box on desktop
+                searchVisible = false;
+                searchBox.classList.remove('active');
+                searchBtn.classList.remove('hidden');
+            }
         }
     });
 
